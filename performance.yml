@@ -1,0 +1,49 @@
+config:
+  target: "https://api.todoist.com"
+  phases:
+    - duration: 3
+      arrivalRate: 1
+      name: "Phase 1"
+  defaults:
+   headers:
+     Authorization: Bearer {{$processEnvironment.TOKEN}}
+     Content-type: application/json
+  #processor: "./myProcessor.js"
+scenarios:
+  - flow:
+    #Get active tasks
+      - get:
+          url: "/rest/v1/tasks"
+    #Create a new task
+      - post:
+          url: "/rest/v1/tasks"
+          json:
+            content: "Buy coffee"
+          capture:
+            json: "$.id"
+            as: "idTask"
+      - log: "Current id is {{idTask}}"
+      #Get an active task
+      - get:
+          url: "/rest/v1/tasks/{{idTask}}"
+      #Update a task
+      - post:
+          url: "/rest/v1/tasks/{{idTask}}"
+          json:
+            content: "Buy cookies"
+      #Change status to complete
+      - post:
+          url: "/rest/v1/tasks/{{idTask}}/close"
+          json:
+            completed: "true"
+      #Reopen task
+      - post:
+          url: "/rest/v1/tasks/{{idTask}}/reopen"
+          json:
+            completed: "false"
+      #Delete a task
+      - delete:
+          url: "/rest/v1/tasks/{{idTask}}"
+          
+  
+# For more information: https://artillery.io/docs/script-reference/ 
